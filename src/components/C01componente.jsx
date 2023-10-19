@@ -2,7 +2,7 @@ import React from 'react'
 
 const C01componente = () => {
   return (
-    <div>
+    <div >
       <h1>Componente 1</h1>
       Pagina de prueba
     </div>
