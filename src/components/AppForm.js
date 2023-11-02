@@ -1,30 +1,57 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { db } from "../firebase/firebase";
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 
 const Appform = (props) => {
-  const camposRegistro = {nombre:"", edad:"", genero:""}
+  const camposRegistro = {nombre:"", edad:"", genero:""}                        ///CAMPOS REGISTRO
   const [objeto, setObjeto] = useState(camposRegistro);
+
+
 ////// GUARDAR / ACTUALIZAR /////
-  const manejarEnvio = (e) => {
+  const manejarEnvio = async (e) => {
     e.preventDefault();
     try {
       if(props.idActual==""){
         if(validarForm()){
           addDoc(collection(db, 'persona'), objeto);
-          console.log("Se guardo con exito....");
+          console.log("Se guardo con exito en BD");
         }else{
           console.log("No se guardo");
         }
         
       }else{
-        console.log("Actualizar en BD");
+        //////////ACTUALIZAR//////////////////////
+        await updateDoc(doc(collection(db, "persona"), props.idActual), objeto);
+        console.log("Se actualizó en BD");
+        //porps.fnRead()    ///////// No es necesario se cambio fn en useEffect
+        props.setIdActual('');
       }
       setObjeto(camposRegistro);
     } catch (error){
-      console.error();
+      console.log("Error en CREAR o UPDATE: ", error);
     }
   }
+
+  useEffect(() => {
+    if ( props.idActual === "") {
+      setObjeto({...camposRegistro});
+    } else {
+      obtenerDatosporId(props.idActual);
+    }
+  }, [props.idActual]);
+
+  const obtenerDatosporId = async (xId) =>{
+    //console.log("xId ", xId);
+    const objPorId = doc(db, "persona", xId);
+    const docPorId = await getDoc(objPorId);
+    if (docPorId.exists()) {
+      //console log("Datos de doc... ", docPorId.data());
+      setObjeto(docPorId.data());
+    } else {
+      console.log("No hay doc... ");
+    }
+  }
+
 
   const validarForm = () => {
     if(objeto.nombre==="" || /^\s+$/.test(objeto.nombre)){

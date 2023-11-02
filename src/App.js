@@ -1,29 +1,54 @@
-import logo from './logo.svg';
-import './App.css';
-//import C01componente from './components/C01componente';
-//import P4variable from './components/P4variable';
-import AppForm from './components/AppForm';
+//import logo from './logo.svg';
+//import './App.css';
 import { useState } from 'react';
+import AppForm from './components/AppForm';
+import { deleteDoc, collection, doc, onSnapshot, query } from 'firebase/firestore';
+import { db } from './firebase/firebase';
 
 function App() {
-  ///// READ - LECTURA - fnRead //////
-  const [docBD, setdocBD] = useState([]);
+  ///////// READ - Lectura - fnRead ////////////
+  const [docBD, setDocBD] = useState([]);
   const fnRead = () => {
+    const xColecionConQuery = query(collection(db, "persona"));
+    const unsubscribe = onSnapshot(xColecionConQuery, (xDatosBD) => {
+      const xDoc = [];
+      xDatosBD.forEach((docV)=>{
+        xDoc.push({id:docV.id, ...docV.data()});
+        //console({id:doc.id, ...doc.data()});
+      });
+      setDocBD(xDoc);
+    });
   }
-  ///// DELETE - ELIMINAR - fnDelete /////
+  fnRead();
+  //console.log(docBD);
+  ///////// DELETE - Eliminar - fnDelete ///////
   const [idActual, setIdActual] = useState("");
-  const fnDelete =(xId) =>{
-
+  const fnDelete = async(xId) => {
+    if (window.confirm("Confirme para eliminar")){
+      await deleteDoc(doc(db, 'persona', xId));
+      console.log("Se elimino... "+xId);
+    }
   }
+  
   return (
-    <div style={{background:"yellow", width:"350px", padding:"10px", textAlign:"center"}}>
-      <h1>App.js</h1>
-      <AppForm {...{idActual}}></AppForm>
-      <i class="large material-icons">insert_chart</i>
+    <div style={{background:"yellow", width:"350px", 
+     padding:"10px"}}>
+      <AppForm {...{idActual}} />
+      {
+        docBD.map((r, index) => 
+        <p key = {r.id}>
+          {index+1}.{r.nombre} 
+          ------ 
+          <span onClick={() => fnDelete(r.id)}> x </span> 
+          ------  
+          <span onClick={() => setIdActual(r.id)}> A </span><br></br>
+          23 Masculino 
+        </p>
+        )
+      }
 
-      <p>1. Juan Manuel   23 Masculino    ---- x - A</p>
-      <p>2. Rosa Maria    25 Femenino     ---- x - A</p>
-      <p>3. Jacinto Mario 22 Masculino    ---- x - A</p>
+
+      <i class="large material-icons">insert_chart</i>
     </div>
   );
 }
