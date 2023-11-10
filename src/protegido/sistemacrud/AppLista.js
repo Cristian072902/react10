@@ -1,58 +1,95 @@
 import React, { useEffect, useState } from 'react'
-import AppForm from './AppForm';
+import AppForm from './AppForm'
 import { collection, deleteDoc, doc, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../../conexion/firebase';
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer, toast } from 'react-toastify';
- 
+
+import "react-toastify/dist/ReactToastify.css";           // Para estilos
+import { ToastContainer, toast } from "react-toastify";   // Para contenedor y diseño
+
 const AppLista = (props) => {
 
   ////// Lectura fnRead ///////////
   const [docBD, setDocBD] = useState([]);
+  //console.log(docBD);
   const fnRead = () => {
-    const xColeccionConQuery = query(collection(db, 'persona'));        // Dato de BD
+    const xColeccionConQuery = query(collection(db, 'persona'));
+    //const xColeccionConQuery = query(collection(db, "persona"), where("nombre", "!=", ""));
     const unsubcribe = onSnapshot(xColeccionConQuery, (xDatosBD) => {
-      const xDoc = [];                            // Variable para organizar datos
-      xDatosBD.forEach((doc) => {                 // Recorriendo datos fon bucle
-        xDoc.push({id:doc.id, ...doc.data()});    // Juntando id y coleccion
+      const xDoc = [];
+      xDatosBD.forEach((doc) => {
+        xDoc.push({id: doc.id, ...doc.data()})
       });
-      setDocBD(xDoc);                             // Pasando datos a "docBD"
+      setDocBD(xDoc);
     });
   }
-  //fnRead();                                     // Prueba sin useEffect
-  useEffect(()=>{ fnRead(); }, [props.idActual]);
   //console.log(docBD); 
 
+  fnRead(); //Prueba sin useEffect
+  //useEffect(()=>{fnRead();}, [props.idActual]);
+
   ////// Delete ////////////////////
-  const [idActual, setIdActual] = useState("");   // Variable para id de c/coleccion
-  const fnDelete = async (xId) => {               // 
-    if(window.confirm("Confirme para eliminar")){ // Ventana para confirmar
-      await deleteDoc(doc(db, "persona", xId));   // Elimina en BD
+  const [idActual, setIdActual] = useState("");
+  const [i, setI] = useState(1);  //Falta
+
+  const fnDelete = async (xId) => {
+    if(window.confirm("Confirme para eliminar")){
+      await deleteDoc(doc(db, 'persona', xId));
+      toast("Doc. eliminado con éxito", {
+        type:"error",
+        autoClose:2000
+      });
+      //console.log("Se ELIMINO con éxito...");
     }
-    toast("Doc. eliminado con exito", {
-      type:'error', 
-      autoClose:2000
-    })
-    //alert("Se ELIMINO con éxito...");
   }
-  
+
+  const fnCerrar = async (xId) => {
+    props.handleCerrarSesion();
+  }
+
+  //style={{ background:"greenyellow", padding:"10px" }}
   return (
-    <div style={{background:"greenyellow", padding:"10px"}}>
-      <h1>AppList.js</h1>
-      <ToastContainer/>
-      <AppForm {...{idActual, setIdActual}} />  {/* Envios de variables */}
-      <h3>Lista de clientes</h3>
-      {
-        docBD.map((row, index) =>               // Extraer registro e index
-          <p key={row.id}>                      {/* Asignar key a <p> */}
-            No. {index + 1}. {row.nombre}       {/* Imprimir Numero y nombre */}
-            ..... 
-            <span onClick={() => fnDelete(row.id)}>x</span>
-            ..... 
-            <span onClick={() => setIdActual(row.id)}>A</span>
-          </p> 
-        )
-      }
+    <div className='container text-center'>
+      <div className='card bs-secondary p-3 mt-3'> 
+
+        <ToastContainer />
+
+        <div className='col-md-12 p-2'>
+          <div className='card mb-1'>
+            <AppForm {...{idActual, setIdActual}} />
+          </div>
+        </div>
+
+        <div className='col-md-12 p-2'>
+          <div className='card mb-1'>
+            <h2>Lista de clientes (AppLista.js)</h2>
+          </div>
+        </div>
+
+        <div className='col-md-12 p-2'>
+          {
+            docBD.map((row, index) =>  
+              <div className='card mb-1' key={row.id} >
+                <div className='card-body'>
+                  <div className='d-flex justify-content-between'>
+                    <h4>No. {index+1}. {row.nombre}</h4>
+                    <div>
+                      <i className='material-icons text-danger' 
+                        onClick={() => fnDelete(row.id)}>close</i>
+                        ...
+                        <i className='material-icons text-warning' 
+                          onClick={() => setIdActual(row.id)}>create</i>
+                    </div>
+                  </div>
+                  <div className='d-flex justify-content'>
+                    <span>Edad: {row.edad} </span> ...
+                    <a href='#'>Genero: {row.genero} </a>
+                  </div>
+                </div>
+              </div>
+            )
+         }
+        </div>
+      </div>
     </div>
   )
 }

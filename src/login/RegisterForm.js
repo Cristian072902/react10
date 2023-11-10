@@ -32,16 +32,20 @@ function RegisterForm() {
   return (
     <div  id='public'>
       <h2>Registro de Nuevo Usuario</h2>
-      <form onSubmit={handleRegister}>
-        <div>
-          <label>Email:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <form className='card card-body' onSubmit={handleRegister}>
+        <div className='form-group input-group'>
+        <div className='input-group-text bd-light'>
+            <i className='material-icons'>group_add</i>
+          </div>
+          <input className='form-control float-start' type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
-        <div>
-          <label>Contraseña:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <div className='form-group input-group'>
+        <div className='input-group-text bd-light'>
+            <i className='material-icons'>group_add</i>
+          </div>
+          <input className='form-control float-start' type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
-        <button type="submit">Registrarse</button>
+        <button className='btn btn-primary btn-block' type="submit">Registrarse</button>
       </form>
     </div>
   );
